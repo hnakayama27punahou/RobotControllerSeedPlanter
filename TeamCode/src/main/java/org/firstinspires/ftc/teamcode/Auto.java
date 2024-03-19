@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Run Robot")
-public class Robot extends OpMode {
+public class Auto extends LinearOpMode {
 
     DcMotor frontLeft, backLeft, frontRight, backRight, waterDispenser, augerDrill, augerElevation;
     CRServo seedPlanterServo;
@@ -18,9 +15,7 @@ public class Robot extends OpMode {
     double turn;
 
     @Override
-    public void init() {
-
-        //Hardware Mapping
+    public void runOpMode() throws InterruptedException {
         frontLeft = hardwareMap.dcMotor.get("driveMotor1");
         backLeft = hardwareMap.dcMotor.get("driveMotor2");
         frontRight = hardwareMap.dcMotor.get("driveMotor3");
@@ -52,58 +47,23 @@ public class Robot extends OpMode {
 
         waterDispenser.setDirection(DcMotorSimple.Direction.FORWARD);
 
-    }
+        //setting encoders (this is a replacement for running for time (for auger Drill and Auger Elevation)
 
-    @Override
-    public void loop() {
+        augerDrill.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        augerElevation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //Y-axis on joystick is inverted
-        drive = gamepad1.left_stick_y *-1;
-        turn = gamepad1.left_stick_x;
+        //set encoder positioning
 
-        leftDrivePower = Range.clip(drive + turn,-1,1);
-        rightDrivePower = Range.clip(drive - turn,-1,1);
+        for (int i = 0; i<20; i++){
+            frontLeft.setPower(1);
+            backLeft.setPower(1);
+            frontRight.setPower(1);
+            backRight.setPower(1);
 
-        frontRight.setPower(rightDrivePower);
-        backRight.setPower(rightDrivePower);
-        frontLeft.setPower(leftDrivePower);
-        backLeft.setPower(leftDrivePower);
-        //drill elevation
+            augerElevation.setTargetPosition(250);
+            augerElevation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            augerElevation.setPower(1);
 
-        augerElevation.setPower(gamepad1.right_stick_y * -1);
-
-        //drill dig
-
-        if (gamepad1.a) {
-            augerDrill.setDirection(DcMotorSimple.Direction.FORWARD);
-            augerDrill.setPower(1);
-        } else if (gamepad1.b) {
-            augerDrill.setDirection(DcMotorSimple.Direction.REVERSE);
-            augerDrill.setPower(1);
-        } else {
-            augerDrill.setPower(0);
         }
-
-        //water dispenser - power must always be set greater than 1. It cannot be set than less than one
-        if (gamepad1.x) {
-            waterDispenser.setPower(0.5);
-        } else {
-            waterDispenser.setPower(0);
-        }
-        //seed planter rotation
-//        if (gamepad1.right_trigger > 0.05) {
-//            seedPlanterServo.setPower(gamepad1.right_trigger);
-//        } else {
-//            seedPlanterServo.setPower(0);
-//        } // redundant code in case of trigger drift
-
-        seedPlanterServo.setPower(gamepad1.right_trigger); //also works btw, just not sure if there is trigger "drift"
-
-        if (gamepad1.right_bumper) {
-            seedPlanterServo.setPower(1);
-        } else {
-            seedPlanterServo.setPower(0);
-        }
-
     }
 }
